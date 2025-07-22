@@ -11,6 +11,69 @@ function buscarTodo(req,res) {
     .catch(e =>{ return res.status(404).send({mensage:`error al consultar la informacion${e}`})})
 }
 
+function agregarJoya(req,res){
+    //console.log(req.body)
+    new joyasModel(req.body).save()
+    .then(info => {
+        return res.status(200).send({
+            message: "La informacion se guardo correctamente", 
+            info})
+    })
+    .catch(e =>{return res.status(404).send({message: `Error al guardar ${e}`})})
+}
+
+async function buscarJoya(req,res,next) {
+    if(!req.body)req.body={}
+    var consulta ={}
+    consulta[req.params.key]=req.params.value
+    //console.log(consulta)
+    joyasModel.find(consulta)
+    .then(joyas =>{
+        if(!joyas.length) return next();
+        req.body.joyas = joyas
+        return next()
+    })
+    .catch(e =>{e=> {
+        req.body.e = e
+        return next()
+    }})
+}
+
+function mostrarJoya(req,res){
+    if(req.body.e)return res.status(404).send({message: `Error al consultar la informacion`})
+    if(!req.body.joyas) return res.status(204).send({message: 'No hay nada que mostrar'})
+        let joyas = req.body.joyas
+    return res.status(200).send({joyas})
+}
+
+function eliminarJoya(req, res){
+    var joyas = {}
+    joyasModel.deleteOne(joyas[0])
+    .then(info => {
+        return res.status(200).send({mensaje: "Registro elimnado"})
+        })
+        .catch(e => {
+            return res.status(404).send({ mensaje: "Error al eliminar la informacion", e })
+        })
+}
+
+function actualizarJoya(req, res) {
+    var joyas = {}
+    joyas = req.body.joyas
+    joyasModel.updateOne(joyas[0], req.body)
+        .then(info => {
+            return res.status(200).send({ mensaje: "Registro actualizado"})
+        })
+        .catch(e => {
+            return res.status(404).send({ mensaje: "Error al actualizar la informacion", e })
+        })
+}
+
 module.exports = {
-    buscarTodo
+    buscarTodo,
+    agregarJoya,
+    buscarJoya,
+    mostrarJoya,
+    eliminarJoya,
+    actualizarJoya
 }
